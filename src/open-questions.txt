@@ -1,0 +1,28 @@
+- Do we want a product to be sell by multiple retailers?
+- Can multiple offers get applied at same time?
+- check if we want to apply best available offer automatically
+- check if we want to keep previous applied offer, currently will remove all previous applied offer when new item is added.
+- check for overbooking policy is applicable an move to another function if required
+- if different retailers have different shipping charges
+- in bngm what will happen if policy is configured for multiple products with different mrp?
+- cart v/s product offer distinction
+- can a same cart contain different retailers?
+
+
+- Scale
+- how often do we want to refer cart / race conditions or change in offer?
+- Load expected - users - will help in deciding should user and cart be separate schemas?
+- maximum no of offers that can be active at a single time and maximum no of products in a single offer and maximum cart size expected
+- indexing is remaining
+
+Availability of system
+Latency -)
+Do we need analytics
+Capacity estimation - read or write heavy - what is R:W ratio?
+Do traffic estimation-  think about # of request you will get - hence derive QPS(query per second)
+Do storage  estimation - learn conversions for this
+Bandwidth estimation -  read and write requests * size of request per second
+Caching strategy of hot request according to 20-80 rule
+Memory estimations - cache memory
+ What type of database should we use - SQL, NoSQL
+user empathy, cost, understanding of the domain, testing, rollout and monitoring strategies.
