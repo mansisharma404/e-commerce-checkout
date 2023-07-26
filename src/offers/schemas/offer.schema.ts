@@ -11,7 +11,7 @@ export class Offer {
   _id: string;
 
   @Prop({ required: true })
-  applicableOnProductId?: Array<string>;
+  applicableOnProductId?: string;
 
   @Prop({ required: false })
   retailerId: string;
@@ -19,11 +19,11 @@ export class Offer {
   @Prop({ required: true })
   offerStrategy: OfferStrategyEnum;
 
-  @Prop({ required: true })
-  multipleDifferentOfferApplicable: boolean;
+  @Prop({ required: true, type: Object })
+  offerConfig: IOfferConfig;
 
   @Prop({ required: true })
-  offerConfig: IOfferConfig;
+  isActive: boolean;
 }
 
 export const OfferSchema = SchemaFactory.createForClass(Offer);

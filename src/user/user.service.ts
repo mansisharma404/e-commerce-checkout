@@ -1,7 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { OfferService } from 'src/offers/offer.service';
 import { ProductService } from 'src/product/product.service';
 import { Product } from '../product/schemas/product.schema';
-import { Cart } from './schemas/user.schema';
+import { Cart, User } from './schemas/user.schema';
 import { UserDao } from './user.dao';
 
 @Injectable()
@@ -9,6 +10,7 @@ export class UserService {
   constructor(
     private readonly userDao: UserDao,
     private readonly productService: ProductService,
+    private readonly offerService: OfferService,
   ) {}
 
   async createUser(createUserDto: Record<string, string>) {
@@ -52,7 +54,11 @@ export class UserService {
       return order;
     });
     if (previouslyOrdered == false)
-      currentOrderedProductDetails.push({ productId: productId, units: units });
+      currentOrderedProductDetails.push({
+        productId: productId,
+        units: units,
+        mrp: product.mrp,
+      });
 
     await this.userDao.addProductToUserCartList(
       userId,
@@ -61,9 +67,32 @@ export class UserService {
 
     // TODO - check if we want to keep previous applied offer, currently will remove all previous applied offer when new item is added.
     // TODO - check if we want to apply best available offer automatically
-    const updatedCartAfterRecalculation =
+    const updatedCartAfterRecalculation: User | null =
       await this.getCartValueAfterRemovingPreviouslyAppliedOffer(userId);
-    return updatedCartAfterRecalculation;
+
+    if (updatedCartAfterRecalculation == null) return null;
+    const getActiveOfferList =
+      await this.offerService.getActiveOffersForUsersCart(
+        updatedCartAfterRecalculation.cart?.orderedProducts,
+      );
+    console.log(getActiveOfferList);
+    if (
+      getActiveOfferList == undefined ||
+      getActiveOfferList.length == 0 ||
+      updatedCartAfterRecalculation.cart?.orderedProducts == null
+    )
+      return updatedCartAfterRecalculation;
+
+    // Assuming only one valid offer will get found
+    const bestOffer = getActiveOfferList[0];
+    console.log(bestOffer);
+    const discountAmount =
+      await this.offerService.getDiscountAmountFromOfferForProductList(
+        bestOffer,
+        updatedCartAfterRecalculation.cart?.orderedProducts,
+      );
+    console.log(discountAmount);
+    return this.getCartValueAfterApplingDiscount(userId, discountAmount);
   }
 
   async getCartValueAfterRemovingPreviouslyAppliedOffer(userId: string) {
@@ -89,6 +118,21 @@ export class UserService {
       deliveryCharge: 0,
       hiddenCharges: 0,
       netPayableAmount: orderMRPSum,
+    };
+    return this.userDao.updateUserCart(userId, updateCartQuery);
+  }
+  async getCartValueAfterApplingDiscount(userId: string, discount: number) {
+    const userCart = await this.userDao.getUserCart(userId);
+    if (userCart == null) return null;
+    const updateCartQuery: Cart = {
+      totalMrp: userCart.totalMrp,
+      orderedProducts: userCart.orderedProducts,
+      deliveryCharge: 0,
+      hiddenCharges: 0,
+      discount: discount,
+      netPayableAmount: userCart.netPayableAmount
+        ? userCart.netPayableAmount - discount
+        : 0,
     };
     return this.userDao.updateUserCart(userId, updateCartQuery);
   }

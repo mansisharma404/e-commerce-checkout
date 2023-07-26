@@ -18,23 +18,29 @@ export class OfferDao {
       const {
         applicableOnProductId,
         offerStrategy,
-        multipleDifferentOfferApplicable,
         offerConfig,
         retailerId,
+        isActive,
       } = offerDto;
       const offerId = await this.counterService.getId(CounterModel.OFFER);
       const createProductQuery: Offer = {
         _id: offerId,
         applicableOnProductId,
         offerStrategy,
-        multipleDifferentOfferApplicable,
         offerConfig,
         retailerId,
+        isActive,
       };
       const offer = await this.offerModel.create(createProductQuery);
       return offer;
     } catch (e) {
       throw new HttpException(e, HttpStatus.BAD_REQUEST);
     }
+  }
+  async getActiveOfferByProductId(productId: string): Promise<Offer | null> {
+    return this.offerModel.findOne({
+      applicableOnProductId: productId,
+      isActive: true,
+    });
   }
 }

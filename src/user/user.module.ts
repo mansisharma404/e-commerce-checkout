@@ -6,12 +6,14 @@ import { UserController } from './user.controller';
 import { UserDao } from './user.dao';
 import { UserService } from './user.service';
 import { ProductModule } from '../product/product.module';
+import { OfferModule } from '../offers/offer.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     CounterModule,
     ProductModule,
+    OfferModule,
   ],
   controllers: [UserController],
   providers: [UserService, UserDao],

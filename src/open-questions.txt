@@ -15,14 +15,3 @@
 - maximum no of offers that can be active at a single time and maximum no of products in a single offer and maximum cart size expected
 - indexing is remaining
 
-Availability of system
-Latency -)
-Do we need analytics
-Capacity estimation - read or write heavy - what is R:W ratio?
-Do traffic estimation-  think about # of request you will get - hence derive QPS(query per second)
-Do storage  estimation - learn conversions for this
-Bandwidth estimation -  read and write requests * size of request per second
-Caching strategy of hot request according to 20-80 rule
-Memory estimations - cache memory
- What type of database should we use - SQL, NoSQL
-user empathy, cost, understanding of the domain, testing, rollout and monitoring strategies.

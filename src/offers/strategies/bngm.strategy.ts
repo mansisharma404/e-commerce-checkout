@@ -3,26 +3,60 @@ import { IOfferConfig } from '../interfaces/offer-config.interface';
 import { IOfferStrategy } from '../interfaces/offer-strategy.interface';
 
 export class bngmStrategy implements IOfferStrategy {
-  getProductDiscountedMRP(context: IOfferConfig): number {
-    if (context.products == undefined)
+  getProductDiscountAmount(
+    validProductId: string,
+    context: IOfferConfig,
+  ): number {
+    if (context.productsInCart == undefined)
       throw new HttpException(
-        `Offer not configured yet - ${context}`,
+        `No product to apply offer -  ${context}`,
         HttpStatus.BAD_REQUEST,
       );
-    if (context.buyN == undefined || context.getM == undefined)
+    if (
+      context.buyN == undefined ||
+      context.getM == undefined ||
+      context.freeProductId == undefined
+    )
       throw new HttpException(
         `Offer not configured correctly - ${context}`,
         HttpStatus.BAD_REQUEST,
       );
 
-    let discountedMRP = 0;
-    for (let i = 0; i < context.products.length; i++) {
-      const minimumUnits =
-        context.products[i].units / (context.buyN + context.getM);
-      const extra = context.products[i].units % (context.buyN + context.getM);
-      discountedMRP += (minimumUnits + extra) * context.products[i].mrp;
+    const cartItems = context.productsInCart;
+    const freeItemsArray = cartItems.filter((item) => {
+      return item.productId == context.freeProductId;
+    });
+    const validOfferProductLists = cartItems.filter((item) => {
+      return item.productId == validProductId;
+    });
+    if (freeItemsArray.length == 0 || validOfferProductLists.length == 0)
+      return 0;
+    const offerProductDetails = validOfferProductLists[0];
+    if (offerProductDetails.units <= context.buyN) return 0;
+
+    if (context.freeProductId == validProductId) {
+      console.log('*****************************');
+      const div = Math.floor(
+        offerProductDetails.units / (context.buyN + context.getM),
+      );
+      const modulus = Math.floor(
+        offerProductDetails.units % (context.buyN + context.getM),
+      );
+      console.log(
+        Math.max(
+          div * context.getM,
+          div * context.getM + modulus - context.buyN,
+        ),
+      );
+      return (
+        Math.max(
+          div * context.getM,
+          div * context.getM + modulus - context.buyN,
+        ) * offerProductDetails.mrp
+      );
     }
 
-    return discountedMRP;
+    // Add logic for different product;
+    return 0;
   }
 }
